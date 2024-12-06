@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: Transaction Service API
+  description: API for managing bank transactions
+  version: 1.0.0
+paths:
+  /transacciones/deposito:
+    post:
+      summary: Registrar un depósito
+      operationId: realizarDeposito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransaccionRequest'
+      responses:
+        '201':
+          description: Depósito realizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '404':
+          description: Cuenta no encontrada
+        '400':
+          description: Datos inválidos
+
+  /transacciones/retiro:
+    post:
+      summary: Registrar un retiro
+      operationId: realizarRetiro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransaccionRequest'
+      responses:
+        '201':
+          description: Retiro realizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '404':
+          description: Cuenta no encontrada
+        '400':
+          description: Datos inválidos o saldo insuficiente
+
+  /transacciones/transferencia:
+    post:
+      summary: Registrar una transferencia
+      operationId: realizarTransferencia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferenciaRequest'
+      responses:
+        '201':
+          description: Transferencia realizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '404':
+          description: Cuenta no encontrada
+        '400':
+          description: Datos inválidos o saldo insuficiente
+
+  /transacciones/historial:
+    get:
+      summary: Consultar historial de transacciones
+      operationId: obtenerHistorial
+      parameters:
+        - name: numeroCuenta
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: fechaInicio
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: fechaFin
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Historial de transacciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaccion'
+
+components:
+  schemas:
+    TransaccionRequest:
+      type: object
+      required:
+        - numeroCuenta
+        - cuentaId
+        - monto
+      properties:
+        numeroCuenta:
+          type: string
+          description: Número de cuenta
+        cuentaId:
+          type: integer
+          description: ID de la cuenta
+        monto:
+          type: number
+          format: double
+          description: Monto de la transacción
+
+    TransferenciaRequest:
+      type: object
+      required:
+        - numeroCuentaOrigen
+        - cuentaOrigenId
+        - numeroCuentaDestino
+        - cuentaDestinoId
+        - monto
+      properties:
+        numeroCuentaOrigen:
+          type: string
+          description: Número de cuenta origen
+        cuentaOrigenId:
+          type: integer
+          description: ID de la cuenta origen
+        numeroCuentaDestino:
+          type: string
+          description: Número de cuenta destino
+        cuentaDestinoId:
+          type: integer
+          description: ID de la cuenta destino
+        monto:
+          type: number
+          format: double
+          description: Monto a transferir
+
+    Transaccion:
+      type: object
+      properties:
+        id:
+          type: string
+        tipo:
+          type: string
+          enum: [DEPOSITO, RETIRO, TRANSFERENCIA]
+        numeroCuentaOrigen:
+          type: string
+        cuentaOrigenId:
+          type: integer
+        numeroCuentaDestino:
+          type: string
+        cuentaDestinoId:
+          type: integer
+        monto:
+          type: number
+          format: double
+        fecha:
+          type: string
+          format: date-time

@@ -1,0 +1,7 @@
+com\bank\transaccionesms\service\TransaccionServiceImplTest.class
+com\bank\transaccionesms\exception\SaldoInsuficienteExceptionTest.class
+com\bank\transaccionesms\controller\TransaccionControllerTest.class
+com\bank\transaccionesms\model\TransaccionTest.class
+com\bank\transaccionesms\exception\GlobalExceptionHandlerTest.class
+com\bank\transaccionesms\exception\TransaccionExceptionTest.class
+com\bank\transaccionesms\TransaccionesmsApplicationTests.class

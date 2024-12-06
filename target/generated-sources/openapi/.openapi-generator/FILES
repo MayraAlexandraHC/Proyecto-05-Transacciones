@@ -1,0 +1,6 @@
+src/main/java/com/bank/demo/api/ApiUtil.java
+src/main/java/com/bank/demo/api/TransaccionesApi.java
+src/main/java/com/bank/demo/api/TransaccionesApiDelegate.java
+src/main/java/com/bank/demo/model/Transaccion.java
+src/main/java/com/bank/demo/model/TransaccionRequest.java
+src/main/java/com/bank/demo/model/TransferenciaRequest.java

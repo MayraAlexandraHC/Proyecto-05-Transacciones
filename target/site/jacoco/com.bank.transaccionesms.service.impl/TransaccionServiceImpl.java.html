@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransaccionServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">transaccionesms</a> &gt; <a href="index.source.html" class="el_package">com.bank.transaccionesms.service.impl</a> &gt; <span class="el_source">TransaccionServiceImpl.java</span></div><h1>TransaccionServiceImpl.java</h1><pre class="source lang-java linenums">package com.bank.transaccionesms.service.impl;
+
+import com.bank.transaccionesms.client.CuentaClient;
+import com.bank.transaccionesms.exception.TransaccionException;
+import com.bank.transaccionesms.model.TipoTransaccion;
+import com.bank.transaccionesms.model.Transaccion;
+import com.bank.transaccionesms.repository.TransaccionRepository;
+import com.bank.transaccionesms.service.TransaccionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import java.time.LocalDateTime;
+
+@Service
+@RequiredArgsConstructor
+public class TransaccionServiceImpl implements TransaccionService {
+
+    private final TransaccionRepository transaccionRepository;
+
+    private final CuentaClient cuentaClient;
+
+    @Override
+    public Mono&lt;Transaccion&gt; realizarDeposito(String numeroCuentaDestino, Integer cuentaId, Double monto) {
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (monto &lt;= 0) {</span>
+<span class="fc" id="L26">            return Mono.error(new TransaccionException(&quot;El monto debe ser mayor a 0&quot;));</span>
+        }
+
+<span class="fc" id="L29">        return cuentaClient.realizarDeposito(cuentaId, monto)</span>
+<span class="fc" id="L30">                .then(transaccionRepository.save(Transaccion.builder()</span>
+<span class="fc" id="L31">                        .tipo(TipoTransaccion.DEPOSITO)</span>
+<span class="fc" id="L32">                        .numeroCuentaDestino(numeroCuentaDestino)</span>
+<span class="fc" id="L33">                        .cuentaDestinoId(cuentaId)</span>
+<span class="fc" id="L34">                        .monto(monto)</span>
+<span class="fc" id="L35">                        .fecha(LocalDateTime.now())</span>
+<span class="fc" id="L36">                        .build()));</span>
+    }
+
+    @Override
+    public Mono&lt;Transaccion&gt; realizarRetiro(String numeroCuentaOrigen, Integer cuentaId, Double monto) {
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (monto &lt;= 0) {</span>
+<span class="nc" id="L42">            return Mono.error(new TransaccionException(&quot;El monto debe ser mayor a 0&quot;));</span>
+        }
+
+<span class="fc" id="L45">        return cuentaClient.realizarRetiro(cuentaId, monto)</span>
+<span class="fc" id="L46">                .then(transaccionRepository.save(Transaccion.builder()</span>
+<span class="fc" id="L47">                        .tipo(TipoTransaccion.RETIRO)</span>
+<span class="fc" id="L48">                        .numeroCuentaOrigen(numeroCuentaOrigen)</span>
+<span class="fc" id="L49">                        .cuentaOrigenId(cuentaId)</span>
+<span class="fc" id="L50">                        .monto(monto)</span>
+<span class="fc" id="L51">                        .fecha(LocalDateTime.now())</span>
+<span class="fc" id="L52">                        .build()));</span>
+    }
+
+    @Override
+    public Mono&lt;Transaccion&gt; realizarTransferencia(
+            String numeroCuentaOrigen,
+            Integer cuentaOrigenId,
+            String numeroCuentaDestino,
+            Integer cuentaDestinoId,
+            Double monto
+    ) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (monto &lt;= 0) {</span>
+<span class="fc" id="L64">            return Mono.error(new TransaccionException(&quot;El monto debe ser mayor a 0&quot;));</span>
+        }
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (numeroCuentaOrigen.equals(numeroCuentaDestino)) {</span>
+<span class="fc" id="L68">            return Mono.error(new TransaccionException(&quot;No se puede transferir a la misma cuenta&quot;));</span>
+        }
+
+<span class="fc" id="L71">        return cuentaClient.realizarRetiro(cuentaOrigenId, monto)</span>
+<span class="fc" id="L72">                .then(cuentaClient.realizarDeposito(cuentaDestinoId, monto))</span>
+<span class="fc" id="L73">                .then(transaccionRepository.save(Transaccion.builder()</span>
+<span class="fc" id="L74">                        .tipo(TipoTransaccion.TRANSFERENCIA)</span>
+<span class="fc" id="L75">                        .numeroCuentaOrigen(numeroCuentaOrigen)</span>
+<span class="fc" id="L76">                        .cuentaOrigenId(cuentaOrigenId)</span>
+<span class="fc" id="L77">                        .numeroCuentaDestino(numeroCuentaDestino)</span>
+<span class="fc" id="L78">                        .cuentaDestinoId(cuentaDestinoId)</span>
+<span class="fc" id="L79">                        .monto(monto)</span>
+<span class="fc" id="L80">                        .fecha(LocalDateTime.now())</span>
+<span class="fc" id="L81">                        .build()));</span>
+    }
+
+    @Override
+    public Flux&lt;Transaccion&gt; obtenerHistorialTransacciones() {
+<span class="fc" id="L86">        return transaccionRepository.findAll();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
